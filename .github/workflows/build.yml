@@ -16,7 +16,7 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
-        distribution: 'bellsoft' # כפי שמוגדר אצלך בפרויקט
+        distribution: 'liberica' # כפי שמוגדר אצלך בפרויקט
         java-version: '25'
 
     # 2. התקנת Rust (הכרחי עבור ה-Installer Wrapper)
