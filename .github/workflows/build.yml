@@ -2,7 +2,7 @@ name: Build Installer
 
 on:
   push:
-    branches: [ master ] # מוגדר לפי ענף ה-master שלך
+    branches: [ master ]
 
 jobs:
   build-windows:
@@ -12,32 +12,27 @@ jobs:
     - name: Check out repository
       uses: actions/checkout@v4
 
-    # שלב הדיבאג שיציג לנו את 10 הקבצים הכי כבדים במאגר תוך חצי דקה
-    - name: Debug - Find 10 Largest Files
-      run: |
-        echo "=== Top 10 Largest Files in Project ==="
-        Get-ChildItem -Path . -Recurse -File -ErrorAction SilentlyContinue | Sort-Object Length -Descending | Select-Object @{Name="File Path";Expression={$_.FullName.Replace("D:\a\Zayit.mtk\Zayit.mtk\", "")}}, @{Name="Size (MB)";Expression={[math]::round($_.Length / 1MB, 2)}} -First 10 | Format-Table -AutoSize
-
-    # 1. התקנת Java (מתוקן ל-liberica שעובד בשרתים של גיטהב)
+    # 1. התקנת Java (באמצעות liberica)
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
         distribution: 'liberica'
         java-version: '25'
 
-    # 2. התקנת Rust (נדרש עבור ה-Wrapper של ה-Installer)
+    # 2. התקנת Rust
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
 
-    # 3. בניית ה-NSIS באמצעות Gradle
+    # 3. בניית ה-NSIS באמצעות Gradle 
+    # כאן החלפנו ל-Release רגיל במקום GraalVM כדי למנוע את דרישת ה-15GB
     - name: Build NSIS with Gradle
-      run: .\gradlew :SeforimApp:packageGraalvmNsis
+      run: .\gradlew :SeforimApp:packageReleaseNsis
 
-    # 4. הרצת סקריפט ה-Batch שלך שאורז את הכל ביחד
+    # 4. הרצת סקריפט ה-Batch שלך (החלף את השם אם קראת לקובץ ה-bat שלך אחרת)
     - name: Run Build Script
-      run: .\build-script.bat # <-- ודא שזה השם המדויק של קובץ ה-bat שלך שנמצא בתיקייה הראשית!
+      run: .\build-script.bat 
 
-    # 5. שמירת קובץ ה-EXE הסופי כדי שתוכל להוריד אותו
+    # 5. שמירת קובץ ה-EXE הסופי להורדה
     - name: Upload Installer Artifact
       uses: actions/upload-artifact@v4
       with:
