@@ -1,0 +1,40 @@
+name: Build Installer
+
+on:
+  push:
+    branches: [ main ] # ירוץ בכל פעם שתעלה קוד לענף הראשי
+
+jobs:
+  build-windows:
+    runs-on: windows-latest # נבקש שרת עם מערכת הפעלה חלונות
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v4
+
+    # 1. התקנת Java (הכרחי עבור Gradle)
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'bellsoft' # כפי שמוגדר אצלך בפרויקט
+        java-version: '25'
+
+    # 2. התקנת Rust (הכרחי עבור ה-Installer Wrapper)
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    # 3. בניית ה-NSIS באמצעות Gradle
+    - name: Build NSIS with Gradle
+      run: .\gradlew :SeforimApp:packageGraalvmNsis
+      # הערה: אם זה קורס בגלל זיכרון, שנה ל: .\gradlew :SeforimApp:packageReleaseNsis
+
+    # 4. הרצת סקריפט ה-Batch שלך (שמריץ את Cargo ומאחד את הקבצים)
+    - name: Run Build Script
+      run: .\build-script.bat # החלף בשם האמיתי של קובץ ה-bat שלך
+
+    # 5. שמירת קובץ ה-EXE הסופי כדי שתוכל להוריד אותו מגיטהב
+    - name: Upload Installer Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Zayit-Installer
+        path: target/release/*.exe
