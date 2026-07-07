@@ -1,54 +1,43 @@
-steps:
-    - name: Check out repository
-      uses: actions/checkout@v4
-
-    # --- השורות החדשות שאתה מוסיף עכשיו ---
-    - name: Debug - Find 10 Largest Files
-      run: |
-        echo "=== Top 10 Largest Files in Project ==="
-        Get-ChildItem -Path . -Recurse -File -ErrorAction SilentlyContinue | Sort-Object Length -Descending | Select-Object @{Name="File Path";Expression={$_.FullName.Replace("D:\a\Zayit.mtk\Zayit.mtk\", "")}}, @{Name="Size (MB)";Expression={[math]::round($_.Length / 1MB, 2)}} -First 10 | Format-Table -AutoSize
-    # -------------------------------------
-
-    - name: Set up JDK
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'liberica'
-        java-version: '25'
 name: Build Installer
 
 on:
   push:
-    branches: [ master ] # ירוץ בכל פעם שתעלה קוד לענף הראשי
+    branches: [ master ] # מוגדר לפי ענף ה-master שלך
 
 jobs:
   build-windows:
-    runs-on: windows-latest # נבקש שרת עם מערכת הפעלה חלונות
+    runs-on: windows-latest
 
     steps:
     - name: Check out repository
       uses: actions/checkout@v4
 
-    # 1. התקנת Java (הכרחי עבור Gradle)
+    # שלב הדיבאג שיציג לנו את 10 הקבצים הכי כבדים במאגר תוך חצי דקה
+    - name: Debug - Find 10 Largest Files
+      run: |
+        echo "=== Top 10 Largest Files in Project ==="
+        Get-ChildItem -Path . -Recurse -File -ErrorAction SilentlyContinue | Sort-Object Length -Descending | Select-Object @{Name="File Path";Expression={$_.FullName.Replace("D:\a\Zayit.mtk\Zayit.mtk\", "")}}, @{Name="Size (MB)";Expression={[math]::round($_.Length / 1MB, 2)}} -First 10 | Format-Table -AutoSize
+
+    # 1. התקנת Java (מתוקן ל-liberica שעובד בשרתים של גיטהב)
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
-        distribution: 'liberica' # כפי שמוגדר אצלך בפרויקט
+        distribution: 'liberica'
         java-version: '25'
 
-    # 2. התקנת Rust (הכרחי עבור ה-Installer Wrapper)
+    # 2. התקנת Rust (נדרש עבור ה-Wrapper של ה-Installer)
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
 
     # 3. בניית ה-NSIS באמצעות Gradle
     - name: Build NSIS with Gradle
       run: .\gradlew :SeforimApp:packageGraalvmNsis
-      # הערה: אם זה קורס בגלל זיכרון, שנה ל: .\gradlew :SeforimApp:packageReleaseNsis
 
-    # 4. הרצת סקריפט ה-Batch שלך (שמריץ את Cargo ומאחד את הקבצים)
+    # 4. הרצת סקריפט ה-Batch שלך שאורז את הכל ביחד
     - name: Run Build Script
-      run: .\build-script.bat # החלף בשם האמיתי של קובץ ה-bat שלך
+      run: .\build-script.bat # <-- ודא שזה השם המדויק של קובץ ה-bat שלך שנמצא בתיקייה הראשית!
 
-    # 5. שמירת קובץ ה-EXE הסופי כדי שתוכל להוריד אותו מגיטהב
+    # 5. שמירת קובץ ה-EXE הסופי כדי שתוכל להוריד אותו
     - name: Upload Installer Artifact
       uses: actions/upload-artifact@v4
       with:
