@@ -1,3 +1,19 @@
+steps:
+    - name: Check out repository
+      uses: actions/checkout@v4
+
+    # --- השורות החדשות שאתה מוסיף עכשיו ---
+    - name: Debug - Find 10 Largest Files
+      run: |
+        echo "=== Top 10 Largest Files in Project ==="
+        Get-ChildItem -Path . -Recurse -File -ErrorAction SilentlyContinue | Sort-Object Length -Descending | Select-Object @{Name="File Path";Expression={$_.FullName.Replace("D:\a\Zayit.mtk\Zayit.mtk\", "")}}, @{Name="Size (MB)";Expression={[math]::round($_.Length / 1MB, 2)}} -First 10 | Format-Table -AutoSize
+    # -------------------------------------
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'liberica'
+        java-version: '25'
 name: Build Installer
 
 on:
