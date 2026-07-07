@@ -335,9 +335,7 @@ nucleus.application {
                 multiLanguageInstaller = true // Default: false
                 // Languages: "en_US", "fr_FR", "de_DE", "es_ES", "ja_JP", "zh_CN", etc.
                 installerLanguages = listOf("he_IL")
-                customScript = """
-        !define SpaceRequired 0
-    """.trimIndent()
+                
             }
         }
         macOS {
