@@ -24,11 +24,14 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
 
     # 3. בניית ה-NSIS באמצעות Gradle 
-    # כאן החלפנו ל-Release רגיל במקום GraalVM כדי למנוע את דרישת ה-15GB
+    # כאן הוספנו את ה-env כדי לפתור את שגיאת ההרשאות (Could not find io.github.kdroidfilter...)
     - name: Build NSIS with Gradle
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_ACTOR: ${{ github.actor }}
       run: .\gradlew :SeforimApp:packageReleaseNsis
 
-    # 4. הרצת סקריפט ה-Batch שלך (החלף את השם אם קראת לקובץ ה-bat שלך אחרת)
+    # 4. הרצת סקריפט ה-Batch שאורז את הכל ביחד
     - name: Run Build Script
       run: .\build-script.bat 
 
