@@ -2,7 +2,7 @@ name: Build Installer
 
 on:
   push:
-    branches: [ main ] # ירוץ בכל פעם שתעלה קוד לענף הראשי
+    branches: [ master ] # ירוץ בכל פעם שתעלה קוד לענף הראשי
 
 jobs:
   build-windows:
