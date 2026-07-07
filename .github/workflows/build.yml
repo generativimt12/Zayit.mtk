@@ -1,4 +1,4 @@
-name: Build Installer
+name: Build Installer and Portable
 
 on:
   push:
@@ -9,7 +9,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    # התיקון הגדול נמצא כאן: הוראה לגיטהב להוריד גם את תתי-המאגרים
     - name: Check out repository
       uses: actions/checkout@v4
       with:
@@ -22,21 +21,20 @@ jobs:
         distribution: 'liberica'
         java-version: '25'
 
-    # 2. התקנת Rust
-    - name: Set up Rust
-      uses: dtolnay/rust-toolchain@stable
+    # 2. בניית שני הפורמטים ב-Gradle: גם התקנה (Nsis) וגם גרסה ניידת (Zip)
+    - name: Build NSIS and ZIP with Gradle
+      run: .\gradlew :SeforimApp:packageReleaseNsis :SeforimApp:packageReleaseZip
 
-    # 3. בניית ה-NSIS באמצעות Gradle 
-    - name: Build NSIS with Gradle
-      run: .\gradlew :SeforimApp:packageReleaseNsis
-
-    # 4. הרצת סקריפט ה-Batch שאורז את הכל ביחד
-    - name: Run Build Script
-      run: .\build-script.bat 
-
-    # 5. שמירת קובץ ה-EXE הסופי להורדה
+    # 3. שמירת קובץ ההתקנה הרגיל (ה-EXE של ה-Installer ללא מגבלת ה-15GB)
     - name: Upload Installer Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Zayit-Installer
-        path: target/release/*.exe
+        name: Zayit-Standard-Installer
+        path: SeforimApp/build/compose/binaries/main-release/nsis/*.exe
+
+    # 4. שמירת הגרסה הניידת (קובץ ה-ZIP הנייד)
+    - name: Upload Portable Version Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Zayit-Portable-ZIP
+        path: SeforimApp/build/compose/binaries/main-release/zip/*.zip
