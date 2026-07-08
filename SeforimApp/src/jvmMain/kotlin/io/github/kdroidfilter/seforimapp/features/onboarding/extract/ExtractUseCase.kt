@@ -2,9 +2,6 @@ package io.github.kdroidfilter.seforimapp.features.onboarding.extract
 
 import com.github.luben.zstd.ZstdInputStream
 import io.github.kdroidfilter.seforimapp.core.settings.AppSettings
-import io.github.vinceglb.filekit.FileKit
-import io.github.vinceglb.filekit.databasesDir
-import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
@@ -22,8 +19,10 @@ class ExtractUseCase {
         onProgress: (Float) -> Unit,
     ): String =
         withContext(Dispatchers.Default) {
-            val dbDirV = FileKit.databasesDir
-            val dbDir = File(dbDirV.path).apply { mkdirs() }
+            // התיקון הגדול: שימוש בתיקייה שבה התוכנה נמצאת כרגע (הדיסק און קי)
+            val currentDir = System.getProperty("user.dir") ?: "."
+            val dbDir = File(currentDir, "ZayitData").apply { mkdirs() }
+            
             val source = File(sourcePath)
             require(source.exists()) { "Selected file not found" }
 
