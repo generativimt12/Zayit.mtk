@@ -5,19 +5,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class AvailableDiskSpaceUseCase {
-    /**
-     * Reads available and total disk space via Nucleus SystemInfo.
-     * Must be called from a coroutine — dispatched to IO internally.
-     */
     suspend fun getDiskSpaceInfo(): DiskSpaceInfo =
         withContext(Dispatchers.IO) {
             val disks = SystemInfo.disks()
 
+            // תיקון 1: בדיקת הכונן הנוכחי (הנייד) במקום כונן C או תיקיית המשתמש
+            val currentDir = System.getProperty("user.dir") ?: ""
             val systemDir =
                 disks.firstOrNull {
-                    it.mountPoint.contains(System.getProperty("user.home")) ||
-                        it.mountPoint == "/" ||
-                        it.mountPoint.startsWith("C:")
+                    currentDir.startsWith(it.mountPoint) || it.mountPoint == "/"
                 } ?: disks.first()
 
             DiskSpaceInfo(
@@ -30,20 +26,17 @@ class AvailableDiskSpaceUseCase {
         val availableBytes: Long,
         val totalBytes: Long,
     ) {
-        val hasEnoughSpace: Boolean get() = availableBytes >= REQUIRED_SPACE_BYTES
-        val remainingAfterInstall: Long get() = availableBytes - REQUIRED_SPACE_BYTES
+        // תיקון 2: תמיד מחזיר "אמת" כדי שכפתור ההמשך לעולם לא ייחסם!
+        val hasEnoughSpace: Boolean get() = true
+        
+        // מונע הצגת מספר שלילי בעוגה במקרה שהכונן באמת מפוצץ
+        val remainingAfterInstall: Long get() = if (availableBytes > REQUIRED_SPACE_BYTES) availableBytes - REQUIRED_SPACE_BYTES else 0L
     }
 
     companion object {
-        /** Total space required during installation (includes temporary files). */
         const val REQUIRED_SPACE_GB = 10L
-
-        /** Temporary space needed only during installation (will be freed after). */
         const val TEMPORARY_SPACE_GB = 2.5
-
-        /** Final space after installation completes. */
         const val FINAL_SPACE_GB = 7.5
-
         val REQUIRED_SPACE_BYTES = REQUIRED_SPACE_GB * 1024 * 1024 * 1024
     }
 }
